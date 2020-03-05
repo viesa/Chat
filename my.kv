@@ -1,0 +1,126 @@
+<AuthButton@Button>:
+    color:0.5,0.5,0.5,1
+    background_normal: "white.png"
+    size_hint: 0.3, 0.08
+
+<LoginButton@AuthButton>:
+    pos_hint: {"center_x":0.5, "center_y": 0.4}
+    text: "Login"
+
+<RegisterButton@AuthButton>:
+    pos_hint: {"center_x":0.5, "center_y": 0.3}
+    text: "Register"
+
+<AuthInput@TextInput>
+    color:0.5,0.5,0.5,1
+    background_normal: "white.png"
+    size_hint: 0.3, 0.08
+    font_size: 0.4 * self.height
+
+<UsernameInput@AuthInput>:
+    pos_hint: {"center_x":0.5, "center_y": 0.6}
+    hint_text: "Username"
+    multiline: False
+
+<PasswordInput@AuthInput>:
+    pos_hint: {"center_x":0.5, "center_y": 0.5}
+    hint_text: "Password"
+    multiline: False
+    password: True
+
+<AuthStatus@Label>
+    color:0.8,0.8,0.8,1
+    background_normal: "white.png"
+    size_hint: 0.3, 0.08
+    font_size: 0.4 * self.height
+
+<LoginStatus@AuthStatus>
+    pos_hint: {"center_x":0.5, "center_y": 0.2}
+    text: ""
+
+<ChatHistoryBox@ScrollView>
+
+<ChatHistory@Label>
+    markup:True
+
+<ChatActiveClients@Label>
+    markup:True
+
+<ChatScrollTo@Label>
+
+<ChatInput@TextInput>
+    pos_hint: {"x":0, "bottom":0}
+    size_hint: 0.5, 0.1
+    hint_text: "..."
+
+<ChatSendButton@Button>
+    pos_hint: {"x":0.5, "bottom":0}
+    size_hint: 0.2,0.1
+    text: "Send"
+
+
+<WindowManager>
+
+<LoginWindow>
+    id: winLogin
+    name: "winLogin"
+
+    username: username
+    password: password
+    loginButton: loginButton
+    registerButton: registerButton
+    loginStatus: loginStatus
+
+    FloatLayout:
+        UsernameInput:
+            id: username
+        PasswordInput:
+            id: password
+        LoginButton:
+            id:loginButton
+            on_release:
+                root.manager.transition.duration = 0.2
+                winLogin.authenticateLogin()
+        RegisterButton:
+            id: registerButton
+            on_release:
+                root.manager.transition.duration = 0.2
+                winLogin.authenticateRegister()
+        LoginStatus:
+            id: loginStatus
+
+<ChatWindow>
+    id: win_chat
+    name: "win_chat"
+
+    chat_history_box: chat_history_box
+    chat_history_layout: chat_history_layout
+    chat_history: chat_history
+    chat_active_clients_layout:chat_active_clients_layout
+    # chat_active_clients: chat_active_clients
+    chat_input: chat_input
+
+    FloatLayout:
+        ChatHistoryBox:
+            id: chat_history_box
+            do_scroll_x: False
+            do_scroll_y: True
+            FloatLayout:
+                id:chat_history_layout
+                size_hint_y:None
+                ChatHistory:
+                    id: chat_history
+                    pos_hint_y:None
+                    padding: 0, 10
+        GridLayout:
+            cols:1
+            id:chat_active_clients_layout
+            size_hint_y:None
+        #     # ChatActiveClients:
+        #     #     id: chat_active_clients
+
+        ChatInput:
+            id: chat_input
+        ChatSendButton:
+            id: chat_send_button
+            on_press: win_chat.send_message()
