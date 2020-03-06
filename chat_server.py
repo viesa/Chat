@@ -39,8 +39,16 @@ class Server:
         self.socket_list = [self.server_socket]
         self.clients = {}
 
+        self.new_clients = []
+        self.del_clients = []
+
     def mgr(self):
         while self.is_active:
+            if len(self.new_clients):
+                self.broadcast_new_clients()
+            if len(self.del_clients):
+                self.broadcast_del_clients()
+
             read_sockets, _, exception_sockets = select.select(
                 self.socket_list, [], self.socket_list
             )
@@ -103,6 +111,7 @@ class Server:
                 if query == "REG"
                 else self.attempt_login(username, password)
             )
+
             token = secrets.token_hex(16) if result["success"] else 0
 
             auth_result = {
@@ -122,13 +131,15 @@ class Server:
                     "token": token,
                     "chat_color": chat_color,
                 }
+                self.new_clients.append(self.clients[client_socket].copy())
                 print(
                     f"Accpeted new connection from {client_address[0]}:{client_address[1]} username:{username}"
                 )
-                self.broadcast_active_clients()
             else:
                 client_socket.close()
                 return False
+            self.send_active_clients(client_socket)
+            time.sleep(0.3)
         else:
             return False
 
@@ -139,8 +150,8 @@ class Server:
         if not incoming:
             print(f"Closed connection from {client['username']}")
             self.socket_list.remove(notified_socket)
+            self.del_clients.append(self.clients[notified_socket].copy())
             del self.clients[notified_socket]
-            self.broadcast_active_clients()
             return False
 
         data = incoming["data"]
@@ -175,16 +186,32 @@ class Server:
             }
             self.send_message(client_socket, "CHATUPT", packet)
 
-    def broadcast_active_clients(self):
-        clients_no_tokens = []
-        for socket in self.socket_list:
-            if socket is not self.server_socket:
-                client = self.clients[socket]
-                client_no_token = client.copy()
-                del client_no_token["token"]
-                clients_no_tokens.append(client_no_token)
+    def broadcast_new_clients(self):
+        clients_no_token = []
+        for client in self.new_clients.copy():
+            del client["token"]
+            clients_no_token.append(client)
         for client_socket in self.clients:
-            self.send_message(client_socket, "USRUPT", clients_no_tokens)
+            self.send_message(client_socket, "USRSNEW", clients_no_token)
+        self.new_clients.clear()
+
+    def broadcast_del_clients(self):
+        clients_no_token = []
+        for client in self.del_clients.copy():
+            del client["token"]
+            clients_no_token.append(client)
+        for client_socket in self.clients:
+            self.send_message(client_socket, "USRSDEL", clients_no_token)
+        self.del_clients.clear()
+
+    def send_active_clients(self, client_socket):
+        clients_no_token = []
+        for socket in self.clients:
+            if socket is not client_socket:
+                client = self.clients[socket].copy()
+                del client["token"]
+                clients_no_token.append(client)
+        self.send_message(client_socket, "USRSNEW", clients_no_token)
 
     def handle_exception_sockets(self, exception_sockets):
         for notified_socket in exception_sockets:

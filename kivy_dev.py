@@ -118,6 +118,7 @@ class ChatWindow(Screen):
         self.is_active = True
         self.worker = threading.Thread(target=self.chat_mgr)
         self.chat_history.text = "\n"
+        self.active_clients = []
 
     def on_enter(self):
         self.worker.start()
@@ -144,9 +145,26 @@ class ChatWindow(Screen):
                 self.client.new_messages.clear()
                 self.update_chat_history_layout()
 
-            new_clients = self.client.fetch_active_clients()
-            if len(new_clients) > 0:
-                self.chat_active_clients_layout.add_widget(Label(text="TEST"))
+            once = False
+            for new_client in self.client.new_clients:
+                self.active_clients.append(new_client)
+                once = True
+            for del_client in self.client.del_clients:
+                self.active_clients.remove(del_client)
+                once = True
+
+            self.client.new_clients.clear()
+            self.client.del_clients.clear()
+
+            if once:
+                self.active_clients_label.text = "\n"
+                for active_client in self.active_clients:
+                    self.active_clients_label.text += (
+                        f"<[color={active_client['chat_color']}]"
+                        + active_client["username"]
+                        + "[color=FFFFFF]>"
+                        + "\n"
+                    )
                 self.update_active_clients_layout()
 
             time.sleep(0.1)
@@ -160,9 +178,14 @@ class ChatWindow(Screen):
         )
 
     def update_active_clients_layout(self):
-        self.chat_active_clients_layout.pos_hint = {"x": 0.7, "top": 1}
-        self.chat_active_clients_layout.size_hint_x = 0.3
-        pass
+        self.active_clients_layout.height = (
+            self.active_clients_label.texture_size[1] + 15
+        )
+        self.active_clients_label.height = self.active_clients_label.texture_size[1]
+        self.active_clients_label.text_size = (
+            self.active_clients_label.width * 0.98,
+            None,
+        )
 
 
 class WindowManager(ScreenManager):

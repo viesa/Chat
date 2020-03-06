@@ -20,11 +20,11 @@ class Client:
         self.status = ""
         self.token = ""
         self.new_messages = []
+        self.new_clients = []
+        self.del_clients = []
 
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sending_list = []
-        self.active_clients = []
-        self.new_active_clients = False
 
         self.worker = threading.Thread(target=self.mgr)
         self.worker.start()
@@ -114,9 +114,10 @@ class Client:
             self.new_messages.append(
                 {"username": username, "message": message, "chat_color": chat_color,}
             )
-        elif query == "USRUPT":
-            self.active_clients = data.copy()
-            self.new_active_clients = True
+        elif query == "USRSNEW":
+            self.new_clients = data.copy()
+        elif query == "USRSDEL":
+            self.del_clients = data.copy()
 
         return True
 
@@ -124,12 +125,6 @@ class Client:
         for packet in self.sending_list:
             self.client_socket.send(packet["header"] + packet["query"] + packet["data"])
         self.sending_list.clear()
-
-    def fetch_active_clients(self):
-        if self.new_active_clients:
-            return self.active_clients
-        else:
-            return []
 
 
 if __name__ == "__main__":

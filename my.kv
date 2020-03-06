@@ -40,11 +40,17 @@
 
 <ChatHistoryBox@ScrollView>
 
+<ActiveClientsBox@ScrollView>
+
 <ChatHistory@Label>
     markup:True
+    pos_hint_y:None
+    padding: 0, 10
 
-<ChatActiveClients@Label>
+<ActiveClientsLabel@Label>
     markup:True
+    pos_hint_y:None
+    padding: 0, 10
 
 <ChatScrollTo@Label>
 
@@ -96,28 +102,42 @@
     chat_history_box: chat_history_box
     chat_history_layout: chat_history_layout
     chat_history: chat_history
-    chat_active_clients_layout:chat_active_clients_layout
-    # chat_active_clients: chat_active_clients
+    active_clients_box:active_clients_box
+    active_clients_layout:active_clients_layout
+    active_clients_label: active_clients_label
     chat_input: chat_input
 
     FloatLayout:
+        Label:
+            text:"Messages"
+            size_hint: 0.5, 0.05
+            pos_hint: {"top":1}
         ChatHistoryBox:
             id: chat_history_box
             do_scroll_x: False
             do_scroll_y: True
+            size_hint: 0.5,0.85
+            pos_hint: {"top":0.95}
             FloatLayout:
                 id:chat_history_layout
                 size_hint_y:None
                 ChatHistory:
                     id: chat_history
-                    pos_hint_y:None
-                    padding: 0, 10
-        GridLayout:
-            cols:1
-            id:chat_active_clients_layout
-            size_hint_y:None
-        #     # ChatActiveClients:
-        #     #     id: chat_active_clients
+        Label:
+            text:"In Room"
+            size_hint: 0.2, 0.05
+            pos_hint: {"x":0.55, "top":1}
+        ActiveClientsBox:
+            id: active_clients_box
+            do_scroll_x: False
+            do_scroll_y: True
+            size_hint: 0.2,0.85
+            pos_hint: {"x":0.55 ,"top":0.95}
+            FloatLayout:
+                id:active_clients_layout
+                size_hint_y:None
+                ActiveClientsLabel:
+                    id: active_clients_label
 
         ChatInput:
             id: chat_input
